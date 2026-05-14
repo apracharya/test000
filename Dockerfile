@@ -1,30 +1,22 @@
-# STAGE 1: Build the JAR inside Docker
-FROM eclipse-temurin:25-jdk-alpine AS build
+# STAGE 1: Build the JAR using Maven
+FROM maven:3.9.9-eclipse-temurin-25-alpine AS build
 WORKDIR /app
 
-# Copy the gradle wrapper and configuration files first (for caching)
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
+# Copy the pom.xml and source code
+COPY pom.xml .
+COPY src ./src
 
-# Give permission to execute the wrapper
-RUN chmod +x gradlew
+# Build the application (skipping tests for a faster build)
+RUN mvn clean package -DskipTests
 
-# Copy the source code
-COPY src src
-
-# Build the application (skipping tests to save time on the free tier)
-RUN ./mvnw clean package -x test
-
-# STAGE 2: Create the final small image
+# STAGE 2: Create the final runtime image
 FROM eclipse-temurin:25-jdk-alpine
 WORKDIR /app
 
-# Copy only the JAR from the build stage
-COPY --from=build /app/build/libs/*.jar app.jar
+# Maven puts the JAR in the 'target' folder
+COPY --from=build /app/target/*.jar app.jar
 
-# Expose the port (Render usually looks at 8080 or the PORT env var)
+# Expose the port Spring Boot usually uses
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
