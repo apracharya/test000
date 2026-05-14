@@ -1,0 +1,51 @@
+<configuration>
+
+    <!-- Log folder -->
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE" value="App"/>
+
+    <!-- LOG PATTERN -->
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5level [%thread] --- %class.%method: line %line - %msg%n"/>
+
+
+    <!-- ================= CONSOLE APPENDER ================= -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- ================= FILE APPENDER ================= -->
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <!-- Active log file -->
+        <file>${LOG_PATH}/${LOG_FILE}.log</file>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+
+        <!-- Daily rotation -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+            <!-- archive filename -->
+            <fileNamePattern>${LOG_PATH}/app_%d{yyyyMMdd}.log.gz</fileNamePattern>
+
+            <!-- keep logs for 30 days -->
+            <maxHistory>30</maxHistory>
+
+        </rollingPolicy>
+
+    </appender>
+
+
+    <!-- ================= ROOT LOGGER ================= -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
